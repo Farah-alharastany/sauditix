@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>حجز تذاكر | {{ team1 }} vs {{ team2 }}</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://code.iconify.design/iconify-icon/1.0.8/iconify-icon.min.js"></script>
+    <!-- Fonts & Icons -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;900&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://code.iconify.design/iconify-icon/1.0.8/iconify-icon.min.js"></script>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              primary: {
+                50: "#f0f9ff",
+                100: "#e0f2fe",
+                200: "#bae6fd",
+                300: "#7dd3fc",
+                400: "#38bdf8",
+                500: "#0ea5e9",
+                600: "#0284c7",
+                700: "#0369a1",
+                800: "#075985",
+                900: "#0c4a6e",
+              },
+              secondary: {
+                50: "#f0fdf4",
+                100: "#dcfce7",
+                200: "#bbf7d0",
+                300: "#86efac",
+                400: "#4ade80",
+                500: "#22c55e",
+                600: "#16a34a",
+                700: "#15803d",
+                800: "#166534",
+                900: "#14532d",
+              },
+            },
+            fontFamily: {
+              sans: ["Tajawal", "sans-serif"],
+            },
+            boxShadow: {
+              "3xl": "0 35px 60px -15px rgba(0, 0, 0, 0.3)",
+              ticket: "0 10px 30px rgba(0, 0, 0, 0.08)",
+              "ticket-dark": "0 10px 30px rgba(0, 0, 0, 0.2)",
+            },
+          },
+        },
+      };
+    </script>
+
+    <style>
+      body {
+        font-family: "Tajawal", sans-serif;
+        transition: all 0.4s ease-in-out;
+      }
+
+      .match-header {
+        background: linear-gradient(
+          135deg,
+          rgba(30, 64, 175, 0.9) 0%,
+          rgba(16, 185, 129, 0.9) 100%
+        );
+      }
+
+      .ticket-card {
+        background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+      }
+      .dark .ticket-card {
+        background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+      }
+
+      .seat-option {
+        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+      }
+      .seat-option:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+      }
+      .seat-option.selected {
+        border: 2px solid #22c55e;
+        background-color: rgba(34, 197, 94, 0.05);
+      }
+
+      .price-display {
+        font-feature-settings: "tnum";
+      }
+
+      .btn-primary {
+        background: linear-gradient(to right, #16a34a, #22c55e);
+        transition: all 0.3s ease;
+      }
+      .btn-primary:hover {
+        background: linear-gradient(to right, #15803d, #166534);
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(22, 163, 74, 0.3);
+      }
+
+      .countdown-flip {
+        transform-style: preserve-3d;
+        transition: transform 0.6s;
+      }
+
+      .animate-float {
+        animation: float 6s ease-in-out infinite;
+      }
+      @keyframes float {
+        0%,
+        100% {
+          transform: translateY(0);
+        }
+        50% {
+          transform: translateY(-20px);
+        }
+      }
+    </style>
+  </head>
+  <body
+    class="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 min-h-screen"
+  >
+    <!-- Header -->
+    <header
+      class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md shadow-sm py-3 px-6 sticky top-0 z-50 border-b border-gray-200 dark:border-gray-700"
+    >
+      <div class="max-w-7xl mx-auto flex items-center justify-between">
+        <div class="flex items-center space-x-4 space-x-reverse">
+          <a href="/" class="flex items-center space-x-2 space-x-reverse">
+            <img
+              class="w-12 h-12 object-contain"
+              src="{{url_for('static', filename='logo.png')}}"
+              alt="شعار SaudiTix"
+            />
+            <span
+              class="text-xl font-bold bg-gradient-to-r from-primary-600 to-secondary-500 bg-clip-text text-transparent"
+              >SaudiTix</span
+            >
+          </a>
+        </div>
+
+        <nav class="hidden lg:flex items-center gap-6">
+          <a
+            href="/"
+            class="relative group text-lg font-medium hover:text-primary-600 dark:hover:text-primary-400 transition"
+          >
+            الرئيسية
+            <span
+              class="absolute bottom-0 right-0 w-0 h-0.5 bg-primary-600 group-hover:w-full transition-all duration-300"
+            ></span>
+          </a>
+          <a
+            href="/"
+            class="relative group text-lg font-medium hover:text-primary-600 dark:hover:text-primary-400 transition"
+          >
+            المباريات
+            <span
+              class="absolute bottom-0 right-0 w-0 h-0.5 bg-primary-600 group-hover:w-full transition-all duration-300"
+            ></span>
+          </a>
+          <a
+            href="#"
+            class="relative group text-lg font-medium hover:text-primary-600 dark:hover:text-primary-400 transition"
+          >
+            حجوزاتي
+            <span
+              class="absolute bottom-0 right-0 w-0 h-0.5 bg-primary-600 group-hover:w-full transition-all duration-300"
+            ></span>
+          </a>
+          <a
+            href="#"
+            class="relative group text-lg font-medium hover:text-primary-600 dark:hover:text-primary-400 transition"
+          >
+            المساعدة
+            <span
+              class="absolute bottom-0 right-0 w-0 h-0.5 bg-primary-600 group-hover:w-full transition-all duration-300"
+            ></span>
+          </a>
+        </nav>
+
+        <div class="flex items-center gap-4">
+          <button
+            class="hidden md:flex items-center gap-2 bg-gradient-to-r from-primary-600 to-primary-800 hover:from-primary-700 hover:to-primary-900 text-white px-5 py-2 rounded-full font-medium transition-all shadow-lg hover:shadow-primary-500/30"
+          >
+            <iconify-icon icon="mdi:account" class="text-lg"></iconify-icon>
+            تسجيل الدخول
+          </button>
+          <button
+            onclick="toggleDarkMode()"
+            class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition"
+            aria-label="تبديل الوضع الليلي"
+          >
+            <iconify-icon
+              id="theme-icon"
+              icon="mdi:weather-sunny"
+              class="text-2xl"
+            ></iconify-icon>
+          </button>
+          <button
+            class="lg:hidden p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition"
+            aria-label="القائمة"
+          >
+            <iconify-icon icon="mdi:menu" class="text-2xl"></iconify-icon>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Match Header -->
+    <section class="match-header text-white py-16">
+      <div class="max-w-7xl mx-auto px-6">
+        <div
+          class="flex flex-col md:flex-row items-center justify-between gap-8"
+        >
+          <div class="text-center md:text-right">
+            <span
+              id="match-stage"
+              class="bg-green-600 text-white px-4 py-1 rounded-full text-sm font-medium mb-4 inline-block"
+            >
+            </span>
+            <h1 class="text-3xl md:text-5xl font-bold mb-4">
+              <span id="team-info"></span>
+            </h1>
+            <div class="flex items-center justify-center md:justify-end gap-4">
+              <div class="flex items-center gap-2">
+                <iconify-icon icon="mdi:calendar"></iconify-icon>
+                <span>{{ match_date }}</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <iconify-icon icon="mdi:clock"></iconify-icon>
+                <span>20:00</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <iconify-icon icon="mdi:map-marker"></iconify-icon>
+                <span>{{ venue }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-8">
+            <div class="text-center">
+              <img
+                id="team1Flag"
+                alt="{{ team1 }}"
+                class="w-24 h-24 object-contain"
+              />
+              <h3 class="text-xl font-bold mt-2">{{ team1 }}</h3>
+            </div>
+
+            <div class="text-2xl font-bold">VS</div>
+
+            <div class="text-center">
+              <img
+                id="team2Flag"
+                alt="{{ team2 }}"
+                class="w-24 h-24 object-contain"
+              />
+              <h3 class="text-xl font-bold mt-2">{{ team2 }}</h3>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-6 py-12">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Ticket Purchase Section -->
+        <div class="lg:col-span-2">
+          <div class="ticket-card rounded-2xl shadow-xl p-8">
+            <h2 class="text-2xl font-bold mb-6">اختر تذكرتك</h2>
+
+            <!-- Seat Type Selection -->
+            <div class="mb-8">
+              <h3 class="text-lg font-semibold mb-4">اختر فئة المقاعد</h3>
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div
+                  class="seat-option cursor-pointer bg-white dark:bg-gray-700 p-4 rounded-xl border border-gray-200 dark:border-gray-600"
+                  onclick="selectSeat('Silver', 1.5)"
+                >
+                  <div class="flex items-center gap-3">
+                    <div
+                      class="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-600 flex items-center justify-center"
+                    >
+                      <iconify-icon
+                        icon="mdi:seat"
+                        class="text-gray-600 dark:text-gray-300"
+                      ></iconify-icon>
+                    </div>
+                    <h4 class="font-bold">المقاعد الفضية</h4>
+                  </div>
+                  <p class="text-gray-500 dark:text-gray-400 text-sm mt-2">
+                    منطقة وسط الملعب مع رؤية جيدة
+                  </p>
+                  <div class="mt-4 font-bold text-green-600">× 1.5</div>
+                </div>
+
+                <div
+                  class="seat-option cursor-pointer bg-white dark:bg-gray-700 p-4 rounded-xl border border-gray-200 dark:border-gray-600"
+                  onclick="selectSeat('Gold', 2.5)"
+                >
+                  <div class="flex items-center gap-3">
+                    <div
+                      class="w-8 h-8 rounded-full bg-yellow-100 dark:bg-yellow-900 flex items-center justify-center"
+                    >
+                      <iconify-icon
+                        icon="mdi:star"
+                        class="text-yellow-500"
+                      ></iconify-icon>
+                    </div>
+                    <h4 class="font-bold">المقاعد الذهبية</h4>
+                  </div>
+                  <p class="text-gray-500 dark:text-gray-400 text-sm mt-2">
+                    منطقة مميزة مع رؤية ممتازة
+                  </p>
+                  <div class="mt-4 font-bold text-green-600">× 2.5</div>
+                </div>
+
+                <div
+                  class="seat-option cursor-pointer bg-white dark:bg-gray-700 p-4 rounded-xl border border-gray-200 dark:border-gray-600"
+                  onclick="selectSeat('VIP', 4.0)"
+                >
+                  <div class="flex items-center gap-3">
+                    <div
+                      class="w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-900 flex items-center justify-center"
+                    >
+                      <iconify-icon
+                        icon="mdi:crown"
+                        class="text-purple-500"
+                      ></iconify-icon>
+                    </div>
+                    <h4 class="font-bold">مقاعد VIP</h4>
+                  </div>
+                  <p class="text-gray-500 dark:text-gray-400 text-sm mt-2">
+                    أفضل المقاعد مع خدمات مميزة
+                  </p>
+                  <div class="mt-4 font-bold text-green-600">× 4.0</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Quantity Selection -->
+            <div class="mb-8">
+              <h3 class="text-lg font-semibold mb-4">عدد التذاكر</h3>
+              <div class="flex items-center gap-4">
+                <button
+                  onclick="adjustQuantity(-1)"
+                  class="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center"
+                >
+                  <iconify-icon icon="mdi:minus"></iconify-icon>
+                </button>
+                <span id="quantity" class="text-xl font-bold">1</span>
+                <button
+                  onclick="adjustQuantity(1)"
+                  class="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center"
+                >
+                  <iconify-icon icon="mdi:plus"></iconify-icon>
+                </button>
+              </div>
+            </div>
+
+            <!-- Price Prediction -->
+            <div class="mb-8">
+              <h3 class="text-lg font-semibold mb-4">السعر المتوقع</h3>
+              <div class="bg-gray-100 dark:bg-gray-700 p-6 rounded-xl">
+                <div class="flex justify-between items-center mb-3">
+                  <span class="text-gray-600 dark:text-gray-300"
+                    >السعر الأساسي:</span
+                  >
+                  <span class="font-medium" id="price-info"></span>
+                </div>
+                <div class="flex justify-between items-center mb-3">
+                  <span class="text-gray-600 dark:text-gray-300"
+                    >مضاعف المقعد:</span
+                  >
+                  <span id="multiplier-display" class="font-medium">1.5x</span>
+                </div>
+                <div class="flex justify-between items-center mb-3">
+                  <span class="text-gray-600 dark:text-gray-300">الكمية:</span>
+                  <span id="quantity-display" class="font-medium">1</span>
+                </div>
+                <div
+                  class="border-t border-gray-200 dark:border-gray-600 my-4"
+                ></div>
+                <div class="flex justify-between items-center">
+                  <span class="text-lg font-bold">المجموع:</span>
+                  <span
+                    id="price-display"
+                    class="text-2xl font-bold text-secondary-600 price-display"
+                  >
+                    {{ price if price else "يتم الحساب..." }} ر.س
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Purchase Button -->
+            <button
+              id="buyBtn"
+              class="btn-primary w-full py-4 rounded-xl text-white font-bold text-lg shadow-lg hover:shadow-xl"
+            >
+              <iconify-icon icon="mdi:lock" class="mr-2"></iconify-icon>
+              اتمام عملية الشراء الآمنة
+            </button>
+
+            <!-- Payment Methods -->
+            <div class="mt-6 flex justify-center gap-4">
+              <img
+                src="https://cdn-icons-png.flaticon.com/512/196/196578.png"
+                alt="Visa"
+                class="h-8 opacity-70"
+              />
+              <img
+                src="https://cdn-icons-png.flaticon.com/512/196/196561.png"
+                class="h-8 opacity-70"
+              />
+              <img
+                src="https://cdn-icons-png.flaticon.com/512/825/825454.png"
+                class="h-8 opacity-70"
+              />
+              <img
+                src="https://cdn-icons-png.flaticon.com/512/825/825462.png"
+                class="h-8 opacity-70"
+              />
+            </div>
+          </div>
+        </div>
+
+        <!-- Match Info Sidebar -->
+        <div class="space-y-6">
+          <!-- Venue Card -->
+          <div
+            class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden"
+          >
+            <img
+              src="https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80"
+              alt="{{ venue }}"
+              class="w-full h-40 object-cover"
+            />
+            <div class="p-6">
+              <h3 class="text-xl font-bold mb-2">معلومات الملعب</h3>
+              <p class="text-gray-600 dark:text-gray-300 mb-4" id="venue-info">
+                {{ venue }}
+              </p>
+              <div class="space-y-2">
+                <div class="flex items-center gap-2">
+                  <iconify-icon
+                    icon="mdi:map-marker"
+                    class="text-primary-600"
+                  ></iconify-icon>
+                  <span>الرياض، المملكة العربية السعودية</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <iconify-icon
+                    icon="mdi:account-group"
+                    class="text-primary-600"
+                  ></iconify-icon>
+                  <span>السعة: 80,000 متفرج</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Match Stats -->
+          <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6">
+            <h3 class="text-xl font-bold mb-4">إحصائيات المباراة</h3>
+            <div class="space-y-4">
+              <div>
+                <div class="flex justify-between mb-1">
+                  <span>التذاكر المباعة</span>
+                  <span id="tickets_sold"></span>
+                </div>
+                <div
+                  class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5"
+                >
+                  <div
+                    class="bg-green-600 h-2.5 rounded-full"
+                    id="progress-bar2"
+                    style="width: 0%"
+                  ></div>
+                </div>
+              </div>
+
+              <div>
+                <div class="flex justify-between mb-1">
+                  <span>الأيام المتبقية</span>
+                  <span id="days_until"></span>
+                </div>
+                <div
+                  class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5"
+                >
+                  <div
+                    class="bg-primary-600 h-2.5 rounded-full"
+                    id="progress-bar"
+                    style="width: 0%"
+                  ></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Safety Info -->
+          <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6">
+            <h3 class="text-xl font-bold mb-4">إجراءات السلامة</h3>
+            <div class="space-y-3">
+              <div class="flex items-start gap-3">
+                <iconify-icon
+                  icon="mdi:shield-check"
+                  class="text-secondary-600 mt-1"
+                ></iconify-icon>
+                <span
+                  >يجب إبراز التذكرة الإلكترونية أو المطبوعة عند الدخول</span
+                >
+              </div>
+              <div class="flex items-start gap-3">
+                <iconify-icon
+                  icon="mdi:bag-personal"
+                  class="text-secondary-600 mt-1"
+                ></iconify-icon>
+                <span>يسمح بحقيبة شخصية صغيرة فقط</span>
+              </div>
+              <div class="flex items-start gap-3">
+                <iconify-icon
+                  icon="mdi:clock-alert"
+                  class="text-secondary-600 mt-1"
+                ></iconify-icon>
+                <span>يوصى بالحضور قبل ساعتين من بدء المباراة</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Blockchain Info -->
+          <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6">
+            <h3 class="text-xl font-bold mb-4 flex items-center gap-2">
+              <iconify-icon
+                icon="mdi:blockchain"
+                class="text-primary-600"
+              ></iconify-icon>
+              تذكرة البلوك تشين
+            </h3>
+            <div class="space-y-3">
+              <div class="flex items-start gap-3">
+                <iconify-icon
+                  icon="mdi:lock-check"
+                  class="text-primary-600 mt-1"
+                ></iconify-icon>
+                <span>تذكرة رقمية غير قابلة للتزوير</span>
+              </div>
+              <div class="flex items-start gap-3">
+                <iconify-icon
+                  icon="mdi:shield-key"
+                  class="text-primary-600 mt-1"
+                ></iconify-icon>
+                <span>محمية بتقنية التشفير المتقدم</span>
+              </div>
+              <div class="flex items-start gap-3">
+                <iconify-icon
+                  icon="mdi:history"
+                  class="text-primary-600 mt-1"
+                ></iconify-icon>
+                <span>سجل معاملات شفاف وغير قابل للتغيير</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-12 px-6">
+      <div class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div>
+          <h3 class="text-xl font-bold mb-4">SaudiTix</h3>
+          <p class="text-gray-400">
+            المنصة الرسمية لحجز تذاكر المباريات في المملكة العربية السعودية
+          </p>
+        </div>
+
+        <div>
+          <h3 class="text-xl font-bold mb-4">روابط سريعة</h3>
+          <ul class="space-y-2">
+            <li>
+              <a href="#" class="text-gray-400 hover:text-white">المباريات</a>
+            </li>
+            <li>
+              <a href="#" class="text-gray-400 hover:text-white">الأسعار</a>
+            </li>
+            <li>
+              <a href="#" class="text-gray-400 hover:text-white">الملاعب</a>
+            </li>
+            <li>
+              <a href="#" class="text-gray-400 hover:text-white"
+                >الشروط والأحكام</a
+              >
+            </li>
+          </ul>
+        </div>
+
+        <div>
+          <h3 class="text-xl font-bold mb-4">اتصل بنا</h3>
+          <ul class="space-y-2">
+            <li class="flex items-center gap-2 text-gray-400">
+              <iconify-icon icon="mdi:phone"></iconify-icon>
+              920000000
+            </li>
+            <li class="flex items-center gap-2 text-gray-400">
+              <iconify-icon icon="mdi:email"></iconify-icon>
+              info@tickets.sa
+            </li>
+            <li class="flex items-center gap-2 text-gray-400">
+              <iconify-icon icon="mdi:map-marker"></iconify-icon>
+              الرياض، المملكة العربية السعودية
+            </li>
+          </ul>
+        </div>
+
+        <div>
+          <h3 class="text-xl font-bold mb-4">تابعنا</h3>
+          <div class="flex gap-4">
+            <a
+              href="#"
+              class="bg-gray-700 hover:bg-gray-600 w-10 h-10 rounded-full flex items-center justify-center"
+            >
+              <iconify-icon icon="mdi:twitter"></iconify-icon>
+            </a>
+            <a
+              href="#"
+              class="bg-gray-700 hover:bg-gray-600 w-10 h-10 rounded-full flex items-center justify-center"
+            >
+              <iconify-icon icon="mdi:instagram"></iconify-icon>
+            </a>
+            <a
+              href="#"
+              class="bg-gray-700 hover:bg-gray-600 w-10 h-10 rounded-full flex items-center justify-center"
+            >
+              <iconify-icon icon="mdi:facebook"></iconify-icon>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div
+        class="max-w-6xl mx-auto pt-8 mt-8 border-t border-gray-700 text-center text-gray-400"
+      >
+        <p>© 2025 SaudiTix. جميع الحقوق محفوظة.</p>
+      </div>
+    </footer>
+
+    <script>
+      // Dark/Light Mode Toggle with LocalStorage
+      function toggleDarkMode() {
+        const html = document.documentElement;
+        const icon = document.getElementById("theme-icon");
+        const isDark = html.classList.toggle("dark");
+
+        localStorage.setItem("darkMode", isDark);
+        icon.setAttribute(
+          "icon",
+          isDark ? "mdi:weather-night" : "mdi:weather-sunny"
+        );
+      }
+
+      // Check for saved preference
+      if (localStorage.getItem("darkMode") === "true") {
+        document.documentElement.classList.add("dark");
+        document
+          .getElementById("theme-icon")
+          .setAttribute("icon", "mdi:weather-night");
+      }
+
+      // Seat Selection Logic
+      let selectedSeat = "Silver";
+      let seatMultiplier = 1.5;
+      let quantity = 1;
+
+      function selectSeat(type, multiplier) {
+        selectedSeat = type;
+        seatMultiplier = multiplier;
+
+        // Remove all selected classes
+        document.querySelectorAll(".seat-option").forEach((option) => {
+          option.classList.remove("selected");
+        });
+
+        // Add selected class to clicked option
+        event.currentTarget.classList.add("selected");
+
+        // Update multiplier display
+        document.getElementById("multiplier-display").textContent =
+          multiplier + "x";
+
+        // Calculate and update price
+        calculatePrice();
+      }
+
+      // Quantity Adjustment
+      function adjustQuantity(change) {
+        quantity += change;
+        if (quantity < 1) quantity = 1;
+        if (quantity > 10) quantity = 10;
+
+        document.getElementById("quantity").textContent = quantity;
+        calculatePrice();
+      }
+
+      // Price Calculation
+      function calculatePrice() {
+        const totalPrice = (predictedPrice * seatMultiplier * quantity).toFixed(
+          2
+        );
+        document.getElementById("price-display").textContent =
+          totalPrice + " ر.س";
+      }
+
+      // Initialize after DOM loaded
+      const urlParams = new URLSearchParams(window.location.search);
+
+      document.addEventListener("DOMContentLoaded", function () {
+        // Default seat selection
+        document.querySelector(".seat-option").classList.add("selected");
+
+        // Get data from URL
+        const team1 = urlParams.get("team1") || "الفريق الأول";
+        const team2 = urlParams.get("team2") || "الفريق الثاني";
+        const stage = urlParams.get("stage") || "غير محددة";
+        const venue = urlParams.get("venue") || "غير محدد";
+        const base_price = urlParams.get("base_price") || "0";
+        const tickets_sold = urlParams.get("tickets_sold") || "0";
+        const days_until = parseInt(urlParams.get("days_until")) || 0;
+        const team1Flag = urlParams.get("team1Flag") || "غير محدد";
+        const team2Flag = urlParams.get("team2Flag") || "غير محدد";
+
+        // Fill page content
+        document.getElementById(
+          "team-info"
+        ).textContent = `${team1} vs ${team2}`;
+        document.getElementById(
+          "match-stage"
+        ).textContent = `المرحلة: ${stage}`;
+        document.getElementById("venue-info").textContent = `الملعب: ${venue}`;
+
+        document.getElementById("tickets_sold").textContent = tickets_sold;
+        document.getElementById("days_until").textContent = days_until;
+
+        // Set progress bar
+        let progress = days_until ;
+        document.getElementById("progress-bar").style.width = `${progress}%`;
+
+        let progress2 = (tickets_sold / 2000) * 100;
+        progress = Math.max(0, Math.min(progress2, 100));
+        document.getElementById("progress-bar2").style.width = `${progress2}%`;
+
+        document.getElementById(
+          "team1Flag"
+        ).src = `https://flagcdn.com/w320/${team1Flag}.png`;
+        document.getElementById(
+          "team2Flag"
+        ).src = `https://flagcdn.com/w320/${team2Flag}.png`;
+        // 👇 حساب السعر المتوقع تلقائيًا عند تحميل الصفحة
+        const formData = {
+          base_price: urlParams.get("base_price"),
+          seat_multiplier: seatMultiplier,
+          tickets_sold: urlParams.get("tickets_sold"),
+          days_until: urlParams.get("days_until"),
+          importance: urlParams.get("importance"),
+          stage: urlParams.get("stage"),
+          venue: urlParams.get("venue"),
+          team1: urlParams.get("team1"),
+          team2: urlParams.get("team2"),
+          year: urlParams.get("year"),
+          seat_type: selectedSeat,
+          quantity: quantity,
+        };
+
+        fetch("/predict", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(formData),
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.predicted_price) {
+              predictedPrice = data.predicted_price;
+              calculatePrice();
+              document.getElementById(
+                "price-info"
+              ).textContent = `سعر التذكرة: ${predictedPrice} ريال`;
+            }
+          })
+
+          .catch((error) => {
+            console.error("Error in auto-fetch:", error);
+          });
+      });
+    </script>
+  </body>
+</html>
